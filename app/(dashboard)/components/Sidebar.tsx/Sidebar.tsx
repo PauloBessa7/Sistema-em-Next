@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 import TabSidebar from "../TabsSidebar.tsx/TabSidebar";
 import { ArrowBigLeft, ArrowBigRight, LayoutDashboard, LogOut, Settings, User } from "lucide-react";
 
@@ -19,6 +20,10 @@ export default function Sidebar({ userRole, userSetor }: SidebarProps) {
   function handleTabClick(tab: string) {
     setActiveTab(tab);
   }
+
+  function handleLogout() {
+    signOut({ callbackUrl: "/auth" });
+  }
   return (
     <div className={`min-h-screen p-5 bg-gray-900 text-white transition-all duration-300 shrink-0 ${sideOpen ? 'w-54' : 'w-20'}`}>
     <div className="flex items-center justify-between mb-6">
@@ -36,7 +41,7 @@ export default function Sidebar({ userRole, userSetor }: SidebarProps) {
       {userRole === 'ADMIN' && (
         <TabSidebar text="Admin" href="/admin" icon={<Settings />} active={activeTab === "Admin"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
       )}
-      <TabSidebar text="Logout" href="#" icon={<LogOut />} active={activeTab === "Logout"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
+      <TabSidebar text="Logout" href="#" icon={<LogOut />} active={activeTab === "Logout"} setActiveTab={handleLogout} isOpenSidebar={sideOpen} />
     </ul>
     </div>
   );
