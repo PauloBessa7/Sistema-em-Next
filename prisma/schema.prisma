@@ -45,7 +45,30 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
+  // Permissions
+  roleId        String?   @map("role_id")
+  setorId       String?   @map("setor_id")
+  role          Role?     @relation(fields: [roleId], references: [id])
+  setor         Setor?    @relation(fields: [setorId], references: [id])
+
   @@map("users")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  users       User[]
+
+  @@map("roles")
+}
+
+model Setor {
+  id    String @id @default(cuid())
+  name  String @unique
+  users User[]
+
+  @@map("setores")
 }
 
 model VerificationToken {

@@ -3,7 +3,12 @@ import { useState } from "react";
 import TabSidebar from "../TabsSidebar.tsx/TabSidebar";
 import { ArrowBigLeft, ArrowBigRight, LayoutDashboard, LogOut, Settings, User } from "lucide-react";
 
-export default function Sidebar() {
+interface SidebarProps {
+  userRole?: string;
+  userSetor?: string;
+}
+
+export default function Sidebar({ userRole, userSetor }: SidebarProps) {
   const [sideOpen, setSideOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("Dashboard");
 
@@ -28,6 +33,9 @@ export default function Sidebar() {
       <TabSidebar text="Dashboard" href="/dashboard" icon={<LayoutDashboard />} active={activeTab === "Dashboard"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
       <TabSidebar text="Profile" href="/profile" icon={<User />} active={activeTab === "Profile"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
       <TabSidebar text="Settings" href="#" icon={<Settings />} active={activeTab === "Settings"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
+      {userRole === 'ADMIN' && (
+        <TabSidebar text="Admin" href="/admin" icon={<Settings />} active={activeTab === "Admin"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
+      )}
       <TabSidebar text="Logout" href="#" icon={<LogOut />} active={activeTab === "Logout"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
     </ul>
     </div>

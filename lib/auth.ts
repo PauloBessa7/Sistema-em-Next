@@ -1,7 +1,17 @@
-import NextAuth from "next-auth";
+import NextAuth, { DefaultSession } from "next-auth";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      role?: string;
+      setor?: string;
+    } & DefaultSession["user"];
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -15,9 +25,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async session({ session, user }) {
-      // Adiciona o ID do utilizador à sessão para usares em consultas ao banco
-      if (session.user) {
-        session.user.id = user.id;
+      // Buscamos o usuário no banco incluindo as relações
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        include: { role: true, setor: true },
+      });
+
+      if (session.user && dbUser) {
+        session.user.role = dbUser.role?.name;
+        session.user.setor = dbUser.setor?.name;
       }
       return session;
     },
