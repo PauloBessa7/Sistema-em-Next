@@ -6,11 +6,7 @@ import ResultsSection from "@/components/ResultsSection/ResultsSection";
 import { prisma } from "@/lib/prisma";
 
 export default async function Home() {
-  let data = await prisma.user
-    .findMany()
-    .then(() => {})
-    .catch(() => {});
-  console.log(data);
+  const users = await prisma.user.findMany();
 
   return (
     <div className="min-h-250">
