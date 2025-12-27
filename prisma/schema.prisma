@@ -51,6 +51,8 @@ model User {
   role          Role?     @relation(fields: [roleId], references: [id])
   setor         Setor?    @relation(fields: [setorId], references: [id])
 
+  subscriptions Subscription[]
+
   @@map("users")
 }
 
@@ -61,6 +63,35 @@ model Role {
   users       User[]
 
   @@map("roles")
+}
+
+model Plan {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  price         Int
+  subscriptions Subscription[]
+  features      Feature[]      // Relação Muitos-para-Muitos
+}
+
+model Feature {
+  id          String   @id @default(cuid())
+  key         String   @unique // ex: "RELATORIOS"
+  description String?
+  plans       Plan[]   // Relação Muitos-para-Muitos
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  planId    String
+  status    String   @default("ACTIVE") // ACTIVE, CANCELED, EXPIRED
+  startDate DateTime @default(now())
+  endDate   DateTime // Data de expiração
+
+  user      User     @relation(fields: [userId], references: [id])
+  plan      Plan     @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
 }
 
 model Setor {

@@ -1,48 +1,33 @@
-"use client";
-import { useState } from "react";
-import { signOut } from "next-auth/react";
-import TabSidebar from "../TabsSidebar.tsx/TabSidebar";
-import { ArrowBigLeft, ArrowBigRight, LayoutDashboard, LogOut, Settings, User } from "lucide-react";
+import { CircleAlert, LayoutDashboard, Settings, User } from "lucide-react";
+import { SidebarProvider, SidebarContainer, SidebarToggleButton, SidebarTitle } from "./SidebarToggle";
+import { TabSidebarItem } from "./TabSidebarItem";
+import { LogoutButton } from "./LogoutButton";
+import AccessGate from "@/components/AcessGate/AccessGate";
 
-interface SidebarProps {
-  userRole?: string;
-  userSetor?: string;
-}
-
-export default function Sidebar({ userRole, userSetor }: SidebarProps) {
-  const [sideOpen, setSideOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState("Dashboard");
-
-  function toggleSidebar() {
-    setSideOpen(!sideOpen);
-  }
-
-  function handleTabClick(tab: string) {
-    setActiveTab(tab);
-  }
-
-  function handleLogout() {
-    signOut({ callbackUrl: "/auth" });
-  }
+export default function Sidebar() {
   return (
-    <div className={`min-h-screen p-5 bg-gray-900 text-white transition-all duration-300 shrink-0 ${sideOpen ? 'w-54' : 'w-20'}`}>
-    <div className="flex items-center justify-between mb-6">
-      {sideOpen && <h2 className="text-xl font-bold">Sistema</h2>}
-      {sideOpen ? (
-        <ArrowBigLeft onClick={toggleSidebar} className="cursor-pointer hover:text-gray-400 transition-colors shrink-0" size={24} />
-      ) : (
-        <ArrowBigRight onClick={toggleSidebar} className="cursor-pointer hover:text-gray-400 transition-colors mx-auto shrink-0" size={24} />
-      )}
-    </div>
-    <ul className="space-y-2">
-      <TabSidebar text="Dashboard" href="/dashboard" icon={<LayoutDashboard />} active={activeTab === "Dashboard"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
-      <TabSidebar text="Profile" href="/profile" icon={<User />} active={activeTab === "Profile"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
-      <TabSidebar text="Settings" href="#" icon={<Settings />} active={activeTab === "Settings"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
-      {userRole === 'ADMIN' && (
-        <TabSidebar text="Admin" href="/admin" icon={<Settings />} active={activeTab === "Admin"} setActiveTab={handleTabClick} isOpenSidebar={sideOpen} />
-      )}
-      <TabSidebar text="Logout" href="#" icon={<LogOut />} active={activeTab === "Logout"} setActiveTab={handleLogout} isOpenSidebar={sideOpen} />
-    </ul>
-    </div>
+    <SidebarProvider>
+      <SidebarContainer>
+        <div className="flex items-center justify-between mb-6">
+          <SidebarTitle title="Sistema" />
+          <SidebarToggleButton />
+        </div>
+        <ul className="space-y-2">
+          <TabSidebarItem text="Dashboard" href="/dashboard" icon={<LayoutDashboard />} />
+          <TabSidebarItem text="Profile" href="/profile" icon={<User />} />
+          <TabSidebarItem text="Settings" href="/settings" icon={<Settings />} />
+
+          <AccessGate allowedRoles={["ADMIN"]} >
+            <TabSidebarItem text="Admin" href="/admin" icon={<Settings />} />
+          </AccessGate>
+
+          <AccessGate featureKey="GENERATE_POSTS">
+            <TabSidebarItem text="Generate Posts" href="/reports" icon={<CircleAlert />} />
+          </AccessGate>
+
+          <LogoutButton />
+        </ul>
+      </SidebarContainer>
+    </SidebarProvider>
   );
 }

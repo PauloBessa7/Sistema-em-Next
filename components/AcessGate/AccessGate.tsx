@@ -2,30 +2,47 @@ import { auth } from "@/lib/auth";
 
 interface AccessGateProps {
   children: React.ReactNode;
-  allowedRoles?: string[];   // Lista de Roles permitidos
-  allowedSetores?: string[]; // Lista de Setores permitidos
-  allMustMatch?: boolean;    // Se TRUE, precisa ter Role E Setor. Se FALSE, Role OU Setor.
+  allowedRoles?: string[];    // Roles permitidos
+  allowedSetores?: string[];  // Setores permitidos
+  featureKey?: string;        // Feature necessária
+  requireAll?: boolean;       // true = TODOS, false = QUALQUER
 }
 
 export default async function AccessGate({
   children,
-  allowedRoles = [],
-  allowedSetores = [],
-  allMustMatch = false
+  allowedRoles,
+  allowedSetores,
+  featureKey,
+  requireAll = false,
 }: AccessGateProps) {
   const session = await auth();
-  const user = session?.user as any;
+  const user = session?.user;
 
   if (!user) return null;
 
-  // Se as listas estiverem vazias, consideramos que aquele critério está "aberto"
-  const hasAllowedRole = allowedRoles.length === 0 || allowedRoles.includes(user.role);
-  const hasAllowedSetor = allowedSetores.length === 0 || allowedSetores.includes(user.setor);
+  if (!allowedRoles && !allowedSetores && !featureKey) {
+    return null;
+  }
 
-  // Lógica de validação
-  const canAccess = allMustMatch
-    ? hasAllowedRole && hasAllowedSetor
-    : hasAllowedRole || hasAllowedSetor;
+  const checks: boolean[] = [];
+
+  if (allowedRoles) {
+    checks.push(allowedRoles.includes(user.role ?? ""));
+  }
+
+  if (allowedSetores) {
+    checks.push(allowedSetores.includes(user.setor ?? ""));
+  }
+
+  if (featureKey) {
+    const userFeatures = user.features ?? [];
+    checks.push(userFeatures.includes(featureKey));
+  }
+
+  // ALL ou ANY
+  const canAccess = requireAll
+    ? checks.every(Boolean)
+    : checks.some(Boolean);
 
   if (!canAccess) return null;
 
