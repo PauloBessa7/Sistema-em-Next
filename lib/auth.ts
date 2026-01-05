@@ -26,19 +26,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     // 1. O JWT roda no login. Aqui buscamos tudo no banco UMA vez.
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      // Quando trigger é "update", atualizamos os dados do token com a sessão
+      if (trigger === "update" && session) {
+        console.log("🚀 Atualizando token com dados da sessão:", session);
+        token.name = session.user?.name || token.name;
+        return token;
+      }
+
       if (user) {
         try {
           const dbUser = await buscarFeaturesNoBanco(user.id ?? "");
 
           // Guardamos tudo dentro do Token (criptografado)
           token.id = user.id;
+          token.name = user.name;
           token.role = dbUser?.role?.name;
           token.setor = dbUser?.setor?.name;
 
-          const featureKeys = dbUser?.subscriptions.flatMap((sub) =>
-            sub.plan.features.map((f) => f.key)
-          ) || [];
+          const featureKeys =
+            dbUser?.subscriptions.flatMap((sub) =>
+              sub.plan.features.map((f) => f.key)
+            ) || [];
 
           token.features = [...new Set(featureKeys)];
 
